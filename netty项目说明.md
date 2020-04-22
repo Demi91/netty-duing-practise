@@ -66,3 +66,75 @@ select一直监听事件，事件发生后触发dispatch。
 2）单Reactor多线程：一个接待员和多个服务员
 3）主从Reactor：两个接待员和多个服务员
 
+
+
+【Netty模型】
+
+
+
+主从Reactor对应到netty中， BossGroup 和  WorkerGroup  —>  NioEventLoopGroup
+BossGroup  负责接收客户端的连接
+WorkerGroup  负责网络的读写
+
+NioEventLoopGroup 是一个事件循环组，组中包含很多个事件循环
+  NioEventLoop  代表一个不断循环处理任务的线程   每一个都有selector 用于监听
+
+
+
+BossGroup   
+1)  轮询是否有accept事件发生
+2）处理事件，并且和客户端建立连接， NioSocketChannel -> SocketChannel -> Socket
+      注册到workergroup中，使用seletor进行后续监听
+3）处理任务队列
+
+WorkerGroup
+1）轮询是否有read and write事件发生
+2)   找到 NioSocketChannel
+3）处理任务队列
+
+
+
+Hello world 处理逻辑
+
+1)  创建group,  服务端两个，分别为boss和worker，客户端一个
+
+2)  启动对象初始化
+ServerBootstrap  和  Bootstrap
+对于服务端而言，先后设置其中的线程组group、通道channel、处理器handler、客户端通道对应的处理器childHandler
+
+其中自定义handler的设置，需要先有通道初始化器ChannelInitializer<SocketChannel>，实现其中的通道初始化方法，具体逻辑为 获取通道中的管道，然后加入handler
+
+注：通道是建立连接的角色  管道是管理业务处理逻辑
+
+**其中handler的逻辑如下**
+a) 继承ChannelInboundHandlerAdapter, 此为netty提供的适配器
+b) 重写其中的方法，channelActive 、channelRead、channelReadComplete，分别对应于通道创建、读事件发生、读事件完成三个时间点。
+c)  方法的参数有一个 ChannelHandlerContext ，是处理器的上下文，除了获取通道和管道外，可以调用writeAndFlush() 直接写入数据
+
+
+
+
+
+3）然后绑定端口号(服务端)， 或者连接指定的ip地址加端口号（客户端）
+4）关闭group
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
