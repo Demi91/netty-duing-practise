@@ -11,6 +11,9 @@ import io.netty.util.CharsetUtil;
 
 /**
  * 自定义的通道初始化器
+ * SocketChannel 连接服务端的客户端通道
+ *
+ * ChannelPipeline 帮我们管理业务逻辑的处理顺序
  */
 public class MyChatServerInitializer
         extends ChannelInitializer<SocketChannel> {

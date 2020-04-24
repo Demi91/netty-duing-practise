@@ -189,3 +189,141 @@ Server And Client
 4） 客户端的区别
 
 ​        连接服务端后，保持监听，接收键盘输入后，直接写入通道。
+
+
+
+
+
+## (五)  Netty Http服务
+
+
+
+#### 【Http简述】
+
+应用层协议，默认是80端口，最早推出1991年。
+
+```
+Get  /index.html
+
+<html>
+   <body> hello world</body>
+</html>
+```
+
+
+
+五年后，1.0版本发布，不只文本可以发送，任何格式内容都支持。
+提供了POST和HEAD，以及更改了请求和响应的格式，增加了头信息。
+
+##### 【content-type字段】
+
+声明数据格式及其编码 （服务端声明给客户端使用的）
+text/html   text/plain  
+image/png  ....
+application/javascript
+
+```
+Content-Type: text/html; charset=utf-8
+```
+
+一级类型 和  二级类型
+
+
+
+##### 【Accept字段】
+
+客户端声明可以接收的数据格式
+
+```
+Accept: */*
+```
+
+
+
+##### 【Accept-Encoding字段】
+
+```
+Accept-Encoding: gzip,deflate
+```
+
+客户端可以接收哪些压缩方法
+
+对应Content-Encoding
+
+
+
+此时，每个TCP连接只能发送一次请求，发送完成即关闭，性能较差。
+
+为解决1.0版本，对TCP连接的使用成本过高问题，推出Connection。
+
+##### 【Connection字段】
+
+```
+Connection: keep-alive
+```
+
+
+
+再两年后，推出http/1.1版本
+
+1）引入持久连接的功能，TCP连接默认不关闭，此时无需声明Connection。
+
+2）引入管道机制，在同一个TCP连接里，客户端可以发送多个请求，服务端仍然按照顺序处理和响应，管道管理的是请求的处理逻辑/顺序。
+
+3）增加【content-length字段】声明数据的长度
+
+4）新增 PUT 、DELETE、PATCH、OPTIONS
+
+
+
+此版本的缺点：数据按顺序进行，当有前面的响应很慢的时候，出现阻塞，这个现象叫做“队头阻塞”
+
+
+
+#### 【Http组成】
+
+请求头、请求数据、数据尾部信息
+
+HttpRequest    HttpContent    LastHttpContent
+
+-》  FullHttpRequest   代表完整的http请求   
+
+
+
+Netty提供的关于http的handler：
+
+HttpResponseDecoder  解码器，处理服务端的响应（客户端）
+HttpRequestEncoder 编码器，处理服务端的请求（客户端）
+HttpRequestDecoder  解码器，处理客户端的请求（服务端）
+HttpResponseEncoder  编码器，处理客户端的响应（服务端）
+
+HttpClientCodeC : 编码解码器，用于客户端 HttpResponseDecoder + HttpRequestEncoder 
+HttpServerCodeC:  编码解码器，用于服务端 HttpRequestDecoder + HttpResponseEncoder
+
+由于http的请求和响应，可能由很多部分组成，需要聚合成一个完整的消息
+HttpObjectAggregator   ->  FullHttpRequest / FullHttpResponse
+
+压缩数据的使用
+HttpContentCompressor   压缩，用于服务端
+HttpContentDeCompressor   解压缩，用于客户端
+
+
+
+#### 【Http Demo 处理逻辑】
+
+1） 创建server
+2） 创建初始化器，复习了netty提供的http编码解码器、压缩器、聚合器等等，此时泛型使用Channel
+3） 创建handler，泛型使用FullHttpRequest
+     a)   新建响应DefaultFullHttpResponse，设定三大参数，分别为http版本、响应码、响应数据
+     b）使用HttpHeaders 设置请求头，此时HttpHeaderNames 提供了设置请求头的字段，HttpHeaderValues  提供了请求头字段的常用参数，不要忘记设置长度
+     c） read0方法中使用 write 方法 ， 在readComplete  中使用flush
+4） 通过浏览器或postman验证 
+
+
+
+
+
+
+
+
+
