@@ -20,7 +20,7 @@
 
 
 
-## (二) NIO线程模型
+## (二) NIO 线程模型
 
 Reactor模型定义
 1）事件驱动
@@ -318,6 +318,153 @@ HttpContentDeCompressor   解压缩，用于客户端
      b）使用HttpHeaders 设置请求头，此时HttpHeaderNames 提供了设置请求头的字段，HttpHeaderValues  提供了请求头字段的常用参数，不要忘记设置长度
      c） read0方法中使用 write 方法 ， 在readComplete  中使用flush
 4） 通过浏览器或postman验证 
+
+
+
+
+
+
+
+## (六) WebSocket
+
+
+
+#### 【初识】
+
+http协议的缺陷： 通信只能由客户端发起。
+
+需要一种服务端能够主动推送的能力，websocket。
+
+这种双向通信的能力，也叫“双全工” 
+
+
+
+<img src="images/image-20200426210537562.png" alt="image-20200426210537562" style="zoom:80%;" />
+
+协议标识符：   http://127.0.0.1/    ->    ws://127.0.0.1/
+支持文本和二进制的数据传输，可以和任意服务器通信。
+http协议，是请求和响应，websocket是先握手建立连接，然后一直使用此链接，最终关闭。大大减少通信过程中数据传输的大小，以及频繁创建连接的资源消耗。
+是HTML5提出的，让浏览器和服务器通信的方式。
+
+通信的最小单位是帧frame
+发送端： 将消息切割成多个帧，发送给服务端
+接收端： 接收消息帧，然后将关联的帧进行重新组装，拿到完整的消息
+
+
+
+```
+GET ws://127.0.0.1:9988  HTTP/1.1
+Host: localhost
+Upgrade: websocket    // 升级为ws协议的说明
+Connection: Upgrade 
+Sec-WebSocket-Key: client-random-string
+Sec-WebSocket-Version: 13
+```
+
+Upgrade: websocket和Connection: Upgrade，标识升级信息。
+后两项标识协议版本
+
+
+
+```
+Http/1.1  101  Switching Protocols
+Upgrade: websocket
+Connection: Upgrade 
+Sec-WebSocket-Accept: server-random-string
+```
+
+响应码101，代表http协议更改为websocket协议。
+
+
+
+WebSocket实现的本质：
+
+TCP本身是实现了全双工通信，http的请求应答机制其实限制了这种方式，websocket在连接建立之后，不再使用http协议，以此达到互相发送数据的能力。
+
+
+
+#### 【客户端】
+
+WebSocket对象，以及相关的事件。
+
+| 事件    | 方法      | 说明                 |
+| ------- | --------- | -------------------- |
+| open    | onopen    | 连接建立时触发       |
+| close   | onclose   | 连接关闭时触发       |
+| message | onmessage | 接收服务端数据时触发 |
+| error   | onerror   | 发生错误时触发       |
+
+
+
+相关方法
+send()   使用连接去发送数据
+close()  关闭连接
+
+```
+var ws = new WebSocket("ws://127.0.0.1");
+ws.onopen = function(evt){
+   console.log("connection open");
+   ws.send("hello websocket");  // 发送数据的方法
+};
+```
+
+
+
+WebSocket连接的状态，使用readyState来声明
+
+CONNECTING   正在连接
+OPEN   连接成功可以通信
+CLOSING   正在关闭
+CLOSED   连接关闭或打开连接失败 
+
+
+
+#### 【服务端】
+
+1）WebSocketServer，没什么变化
+2）WebSocketInitializer ，除了http的编解码器和聚合器外，还增加了ChunkedWriteHandler（块方式写）和WebSocketServerProtocolHandler（升级协议使用）
+3）WebSocketHandler， 继承父类的泛型为TextWebSocketFrame，是数据传输的单位，在channelRead0方法中写数据，也需要给通道传入此类型的对象。
+
+
+
+html编写
+1）两个文本框，分别用来客户端写数据和读数据（服务端返回）。
+2）编写js，判断是否支持websocket，创建websocket对象，设置请求地址，声明处理事件的方法，四大事件对应四大方法
+3）一个发送按钮，点击操作触发websocket的send发送数据方法，此时需要判断websocket的状态（四种状态）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
