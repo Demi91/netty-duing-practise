@@ -440,7 +440,7 @@ html编写
 
 
 
-### 【心跳检测】
+#### 【心跳检测】
 
 检测逻辑：
 1） 服务端启动，客户端建立连接，连接的目的是互相发送消息。
@@ -467,7 +467,7 @@ IdleStateHandler , 是netty提供的处理器
 
 
 
-### 【TCP粘包和拆包】
+#### 【TCP粘包和拆包】
 
 TCP是“流”协议，基于字节流，没有界限，只会根据TCP缓冲区的情况进行拆分，所以业务上完整的包，可能被拆分成多个进行发送。
 
@@ -505,12 +505,6 @@ Netty提供的解码器，分为两类：
 ​       DelimiterBasedFrameDecoder  根据用户提供的分隔符处理的解码器
 ​       LineBaseFrameDecoder   根据行尾符("\n" 或 "\r\n")分隔
 
-   
-
-​         字节流
-
-​        ABC\r\n     -》      ABC
-
 
 
 2） 基于长度的协议，增加包头部，在头部中声明数据的长度。
@@ -520,11 +514,100 @@ Netty提供的解码器，分为两类：
 
 
 
+#### 【Demo逻辑】
+
+需求： 客户端循环100次向服务端请求时间
+1）第一种实现方式，传输过程的数据单位是字节流ByteBuf，我们需要自行处理分隔符，以及数据长度等，此时会出现粘包和拆包的问题。
+2）第二种实现方式，使用LineBaseFrameDecoder，配合StringDecoder使用，传输的数据变成了字符串，可以直接处理数据，让业务逻辑上的包和真正传输的包基本一致。
 
 
 
+## (八) 序列化
+
+序列化，将一个对象的状态保存起来，在需要的时候获取
+主要应用于"网络传输"和“对象持久化”
 
 
+
+java原生序列化方式的缺点：
+1）无法跨语言（最为致命）
+2）序列化结果（码流）很大
+3）序列化耗时很长，性能低
+
+
+
+常用的序列化框架
+1）Protobuf  （Google）
+2）Thrift  （Facebook）
+3）Json （Gson || FastJson） 
+
+
+
+#### 【Protobuf】
+
+全称protocal buffers , 常用来解决rpc系统间的调用。
+类似xml的生成和解析，但效率更高，生成的是字节码，可读性较差。
+
+ 
+
+【Demo逻辑】
+
+1）安装idea插件，protobuf support
+2）引入maven依赖和插件
+
+```
+<properties>
+    <os.detected.classifier>windows-x86_64</os.detected.classifier>
+</properties>
+
+<build>
+        <plugins>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.5.0</version>
+                <configuration>
+                    <protocArtifact>
+                        com.google.protobuf:protoc:3.1.0:exe:${os.detected.classifier}
+                    </protocArtifact>
+                    <pluginId>grpc-java</pluginId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>compile-custom</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+```
+
+3）在右侧maven project中可以找到相应的插件 (没有的话刷新)
+![image-20200428220759271](images/image-20200428220759271.png)
+
+4）在和java平级的目录下，创建proto文件夹，然后创建person.proto文件
+5）person.proto
+
+```
+// 声明包名称的空间
+syntax="proto3";
+// 具体的类生成目录
+option java_package="com.duing";
+// 具体的类名
+option java_outer_classname="PersonModel";
+
+// 类结构
+message Person{
+    int32 id = 1;    // 此处的1代表顺序
+    string name = 2;
+}
+```
+
+6)   使用插件进行编译，将编译生成的代码拷贝到需要的目录下
+7）编写测例进行序列化和反序列化操作
 
 
 
