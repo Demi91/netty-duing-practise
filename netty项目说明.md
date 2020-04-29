@@ -553,6 +553,11 @@ java原生序列化方式的缺点：
 【Demo逻辑】
 
 1）安装idea插件，protobuf support
+
+​           如果安装之后，创建*.proto文件没有使用插件，手动设置关联关系
+
+​           settings ->  file types  ->  找到protobuf ->  增加正则表达式
+
 2）引入maven依赖和插件
 
 ```
@@ -608,6 +613,93 @@ message Person{
 
 6)   使用插件进行编译，将编译生成的代码拷贝到需要的目录下
 7）编写测例进行序列化和反序列化操作
+
+
+
+
+
+【websocket + protobuf  demo】
+下载地址   https://github.com/lianggzone/netty-websocket-demo 
+
+## (九) RPC
+
+远程过程调用  Remote Procedure  Call， 本质是一种通信协议。
+解决的问题是，不同系统通信时，能够像调用本地服务一样，调用远程服务。
+
+本地函数调用 -》  socket通信  -》  RPC框架的封装     
+
+1）本地调用
+输入参数和输出结果，都在一个进程空间。
+
+```java
+public String sayHello(String msg){
+    return "hello, "+ msg;
+}
+```
+
+2）socket通信
+调用方 [进程A]  ->  [方法Function]   -> [进程B] 方法实现逻辑
+
+解决方案：  定义通信协议，传参，将处理结果返回
+
+3）RPC框架
+
+解决不同进程间通信的问题
+
+![image-20200429210750226](images/image-20200429210750226.png)
+
+
+
+使用的注意事项：
+ a)   调用方调用本地函数，传入对应参数
+ b)   RPC框架通过动态代理的方式，在运行时动态创建新的类（代理类），在代理类中实现通信的细节（序列化、协议格式、参数校验等），处理之后进行网络传输，服务端收到请求后，继续进行解码和逻辑处理。                          
+
+​        需要重点关注的内容： 代理、通讯协议、序列化、网络传输
+​        比如： dubbo的底层使用了netty
+
+
+
+<img src="images/image-20200429211850450.png" alt="image-20200429211850450" style="zoom:80%;" />
+
+
+
+客户端调用方法时，底层的逻辑，是通过动态代理的方式获取对应service，然后调用方法，实际的代理类中封装了 netty客户端的通信， nettyclient会进行相应的初始化操作，然后将协议+传参等数据，发送的nettyserver进行处理，收到返回结果后，再返回给动态代理方法的返回值。
+
+
+
+具体的实现流程：
+
+<img src="images/image-20200429213839623.png" alt="image-20200429213839623" style="zoom:80%;" />
+
+
+
+进程A要等待进程B的返回结果，使用了Callable，使用线程池来管理。
+       先将请求参数，通过通道传输给 进程B  去处理，wait()等待， 进程B返回结果会在channelRead方法中保存，notify()唤起，返回保存结果给线程池，再返回给代理类执行的方法的结果。
+
+
+
+
+
+
+
+
+
+【复杂的rpc  demo】
+
+
+下载地址： https://github.com/pjmike/springboot-rpc-demo 
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
