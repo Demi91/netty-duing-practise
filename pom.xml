@@ -6,7 +6,12 @@
 
     <groupId>com.duing</groupId>
     <artifactId>netty-duing-practise</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>version1</module>
+        <module>version2</module>
+    </modules>
 
 
     <properties>

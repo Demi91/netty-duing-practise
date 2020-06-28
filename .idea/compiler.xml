@@ -6,7 +6,8 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="netty-duing-practise" />
+        <module name="version1" />
+        <module name="version2" />
       </profile>
     </annotationProcessing>
   </component>
