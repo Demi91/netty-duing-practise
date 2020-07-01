@@ -1,20 +1,33 @@
-package com.duing.version2.file;
+package com.duing.netty.netty.file;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.*;
 import io.netty.util.CharsetUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.io.File;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 // 泛型 用来筛选数据类型
 // FullHttpRequest是完整的http请求  代表要处理的数据单位
 // SimpleChannelInboundHandler 是子类 ChannelInboundHandlerAdapter
 //    封装了channelRead（）方法   ByteBuf被使用时  会自动释放资源
+
+// 因为handler被spring托管  可能会被多个通道共享  所以使用ChannelHandler.Sharable
+@Component
+@ChannelHandler.Sharable
 public class FileServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
     // channelRead0 是读取数据的方法
@@ -46,7 +59,8 @@ public class FileServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         response.headers().set(HttpHeaderNames.CONTENT_TYPE,"text/html;charset=UTF-8");
 
         // 确定返回的数据
-        String data = fileList(path);
+//        String data = fileList(path);
+        String data = fileListByEngine(path);
         // 装载到bytebuf中
         ByteBuf buf = Unpooled.copiedBuffer(data, CharsetUtil.UTF_8);
         response.content().writeBytes(buf);
@@ -64,6 +78,30 @@ public class FileServerHandler extends SimpleChannelInboundHandler<FullHttpReque
         // 出现异常的处理逻辑
     }
 
+
+    @Autowired
+    private TemplateEngine templateEngine;
+
+    public String fileListByEngine(String path) {
+        // 1 拿到模板引擎的对象
+        // 2 获取要渲染的数据
+        File file = new File(path);
+        List<String> nameList = new ArrayList<>();
+        for(File subFile : file.listFiles()){
+            nameList.add(subFile.getName());
+        }
+
+        Context context = new Context();
+        Map<String,Object> valueMap = new HashMap<>();
+        valueMap.put("path",path);
+        valueMap.put("nameList",nameList);
+        context.setVariables(valueMap);
+
+        // 3 编写静态页面
+        // 4 拿到最终结果
+        String content = templateEngine.process("fileList",context);
+        return content;
+    }
 
     // 文件夹的遍历
     public String fileList(String path) {
