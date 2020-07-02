@@ -48,7 +48,7 @@ public class DemoApplication implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        ChannelFuture future = commonServer.start(port, initializer);
+        ChannelFuture future = commonServer.start(port, webSocketInitializer);
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {

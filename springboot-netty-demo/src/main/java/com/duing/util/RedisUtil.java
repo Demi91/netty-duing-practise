@@ -16,7 +16,11 @@ public class RedisUtil {
         if (!redisTemplate.hasKey(key)) {
             return null;
         }
-        Object obj = redisTemplate.opsForValue().get(key);
-        return obj;
+        return redisTemplate.opsForValue().get(key);
+    }
+
+
+    public void set(String key, Object value) {
+        redisTemplate.opsForValue().set(key, value);
     }
 }
