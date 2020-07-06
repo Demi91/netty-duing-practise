@@ -1,8 +1,9 @@
 package com.duing.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
-@Data
+@Data @AllArgsConstructor
 public class UserModel {
 
     private String uid;
