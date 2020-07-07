@@ -11,4 +11,8 @@ public class UserModel {
     // 状态  1 在线  0 离线
     private int status;
 
+    public UserModel(String uid, String nickname) {
+        this.uid = uid;
+        this.nickname = nickname;
+    }
 }

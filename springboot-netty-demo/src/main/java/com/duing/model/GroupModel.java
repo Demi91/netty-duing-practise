@@ -1,10 +1,11 @@
 package com.duing.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.List;
 
-@Data
+@Data @AllArgsConstructor
 public class GroupModel {
 
     private String id;
