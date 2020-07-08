@@ -164,3 +164,74 @@ Redis命令对应的回复类型，每种类型对应的第一个字节都不相
 
 数据结构不够明确
 
+
+
+
+
+### 5、UDP
+
+传输层的协议   User Datagram Protocal
+
+基于报文传输的
+
+
+
+| 分类     | TCP                           | UDP                                      |
+| -------- | ----------------------------- | ---------------------------------------- |
+|          | 面向连接                      | 无连接                                   |
+|          | 只有两端，只能一对一通信      | 可以一对一、一对多、多对一、多对多的通信 |
+|          | 基于字节流                    | 基于报文                                 |
+| 重要特性 | 可靠                          | 不可靠（尽最大努力交付）                 |
+|          | 首部占用空间大，20-60字节之间 | 首部占用空间小，8字节（记录报文长度）    |
+
+
+
+UDP的分类：
+
+单播、多播（组播）、广播
+
+单播：一对一
+组播：一对多（逻辑上的分组）
+广播：一对多（局域网内的广而告之）
+
+
+
+原生UDP的实现
+1）DatagramSocket代表通信的一端
+2）DatagramPacket是数据的通信格式，报文
+           在创建时，需要明确的是，数据的字节数组，以及另一端的ip地址+端口
+           在接收报文和发送报文前，使用字节数组进行接收和组装
+3） socket去接收和发送时，对应receive()和send()方法
+
+
+
+通过Netty来实现
+1）DatagramSocket 对应 NioDatagramChannel
+2）java.net.DatagramPacket 对应 import io.netty.channel.socket.DatagramPacket;
+3）无论客户端还是服务端都使用Bootstrap启动
+4）通过调用Bootstrap的localAddress()指定端口号，也可以调用remoteAddress()指定连接地址（ip+port）
+5)  自定义handlder的使用，继承自SimpleChannelInboundHandler之外，泛型被声明为DatagramPacket，重要逻辑仍然在channelRead0()之中
+6）组装DatagramPacket，通过ByteBuf，加上SocketAddress（ip地址+端口）
+      组装ByteBuf，调用Unpooled工具类的copiedBuffer()方法，明确字符串和编码格式。
+
+
+
+
+
+作业：
+1） 通过netty实现http服务，以及websocket服务
+2） 基于已有的Springboot+Redis封装，存储业务数据到redis中
+           比如用户登录后的session，或者增加好友申请，群组申请等功能，二维码扫描等
+
+
+
+
+
+
+
+
+
+
+
+
+
