@@ -53,6 +53,7 @@ public class FileServer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
+
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
