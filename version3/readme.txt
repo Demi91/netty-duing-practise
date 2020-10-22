@@ -86,9 +86,35 @@ seek(long pos)  可以将文件指针 定位到pos的位置
 getFilePointer()  获取指针的位置
 
 
+Dat4 手写Redis客户端
+
+ 192.168.1.12  6379
+
+ 遵循服务端的数据格式（RESP协议）  进行交互
 
 
+ redis服务端的数据格式 （回复类型） 分为五大格式：
+ 1）用单行回复  "+"   Simple
+ 2）错误消息   "-"   Error
+ 3）整型数字   ":"   Integer
+ 4）批量回复   "$"   BulkString
+ 5）多个批量回复  "*"   Array
 
+ 通过在数据的开头增加不同的标识来区分
+
+
+ 当使用jar包  连接redis服务端时   jar中封装的客户端代码和此代码相通
+
+
+ springboot和netty的整合
+
+ 1）创建springboot项目
+ 2）引入netty依赖
+ 3）将netty的server和handler代码进行改造
+      server的启动和销毁服务的操作要分开
+      server对象和handlder交由spring容器管理 （增加@Component注解）  
+       handler托管后，还需设置为共享的 Sharable注解
+ 4）springboot的启动过程中，加入对netty服务的启动      
 
 
 
