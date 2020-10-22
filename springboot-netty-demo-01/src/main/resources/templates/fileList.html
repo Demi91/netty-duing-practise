@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>http文件服务</title>
+</head>
+<body>
+
+<h3><p th:text="${path}"></p></h3>
+
+<ul th:each="name : ${nameList}">
+    <li> 链接：<a th:href="${name}" th:text="${name}"></a></li>
+</ul>
+</body>
+</html>
