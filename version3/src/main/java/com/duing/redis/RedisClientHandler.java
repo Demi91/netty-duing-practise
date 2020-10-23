@@ -1,4 +1,4 @@
-package com.duing.file.redis;
+package com.duing.redis;
 
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelDuplexHandler;

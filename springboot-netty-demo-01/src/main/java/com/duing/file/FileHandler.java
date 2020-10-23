@@ -47,7 +47,8 @@ public class FileHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         // 如果是文件 可以拦截  不返回
 
         // 遍历所有文件  返回
-        String data = fileList(path);
+//        String data = fileList(path);
+        String data = fileListByEngine(path);
 
         FullHttpResponse response = new DefaultFullHttpResponse(
                 HttpVersion.HTTP_1_1, HttpResponseStatus.OK);

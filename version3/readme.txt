@@ -114,7 +114,35 @@ Dat4 手写Redis客户端
       server的启动和销毁服务的操作要分开
       server对象和handlder交由spring容器管理 （增加@Component注解）  
        handler托管后，还需设置为共享的 Sharable注解
- 4）springboot的启动过程中，加入对netty服务的启动      
+ 4）springboot的启动过程中，加入对netty服务的启动和销毁
+      通过实现CommandLineRunner接口的run方法，进行启动
+      通过实现Runtime的addShutdownHook方法，进行销毁
 
+
+
+springboot和redis的整合
+
+redis的客户端分为  Jedis  Redission  Lettuce
+
+Jedis 最早期普及的客户端  springboot1.0版本时使用
+Redission  支持分布式、支持扩展的数据结构
+Lettuce  更高级的客户端  springboot2.0版本后使用
+
+  能够更好支持  线程安全  异步  集群  哨兵等高级功能
+
+
+1) 引入redis依赖
+2）增加redis配置
+3）创建对应的配置类加载bean
+4) 使用bean  在自定义的Redis工具类中
+
+
+
+================================================
+
+小项目   即时通讯工具
+
+群聊系统   借鉴开源项目的前端代码
+  springboot + netty + websocket  (redis之中)
 
 
