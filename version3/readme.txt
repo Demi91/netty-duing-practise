@@ -1,5 +1,4 @@
 
-
 netty项目  共10节  周期两周
 
 java工程师能做什么？
@@ -144,5 +143,115 @@ Lettuce  更高级的客户端  springboot2.0版本后使用
 
 群聊系统   借鉴开源项目的前端代码
   springboot + netty + websocket  (redis之中)
+
+
+参考自github上的开源项目
+https://github.com/javanf/web-im
+
+使用其前端代码，重写其后端逻辑
+
+
+当前Demo功能分析：
+A) 创建昵称登录，代表新用户上线，广播给其他用户
+B) 登录后，查看其他在线用户，以及已存在的群组
+C) 可以支持一对一聊天
+D) 可以创建群组，或者加入某群组，然后发送消息，实现一对多聊天
+
+
+熟悉一下项目
+
+运行客户端
+首先要执行 npm install
+每次运行  执行 npm run dev
+
+
+运行服务端
+server/index.js
+node index.js
+
+
+分析数据结构
+
+数据模型的设计：
+“数据是启动项目的第一步”
+
+
+按照处理方式的不同
+可以分为 操作类别（操作用户、操作群组）
+消息类别（一对一、一对多聊天）
+
+
+按照请求的逻辑划分
+[用户登录](创建连接)、[用户注销](断开连接)
+[创建群组]、[加入群组]
+[发送消息](内部划分为 私聊 或 群聊)
+
+// 也可以设计为 发送私聊 & 发送群聊  =》 更推荐的设计方式
+
+数据模型：
+A) 用户   昵称nickname  UID唯一标识
+B) 群组   群组名称name  群组ID  用户列表
+C) 消息
+
+   使用bridge数组  区分是私聊还是群聊
+   bridge[uid,anotherUid]   不为空  是私聊
+          是由uid 发送给 anotherUid的消息
+   bridge[]  为空  是群聊  增加一个群组ID  groupId
+
+使用type进行请求类型的划分 （请求消息）
+1 创建连接  2 断开连接  10 创建群组  20 加入群组  
+100 发送消息
+
+服务端处理完数据后，返回给客户端的响应，也划分了类型，
+同样使用了type  （响应消息）
+1 操作  2 消息
+
+
+接口设计
+1）用户创建
+请求
+{"uid":"web_im_1593668895325","type":1,"nickname":"123","bridge":[],"groupId":""}
+响应
+{"type":1,"date":"2020-07-02 14:12:23","msg":"123加入聊天室","users":[{"nickname":"123","uid":"web_im_1593668895325","status":1},{"nickname":"554","uid":"web_im_1593668994253","status":1}],"groups":[{"id":1593668901314,"name":"222","users":[{"uid":"web_im_1593668895325","nickname":"123"},{"uid":"web_im_1593668994253","nickname":"554"}]}],"uid":"web_im_1593668895325","nickname":"123","bridge":[]}
+
+其中uid 是由客户端生成的（实际开发中，应该由服务端生成）
+   生成逻辑是  项目名web_im + 时间戳
+
+
+2）创建群组   
+请求
+{"uid":"web_im_1593668895325","type":10,"nickname":"123","groupName":"newGroup","bridge":[]}
+响应
+{"type":1,"date":"2020-07-02 14:13:00","msg":"123创建了群newGroup","users":[{"nickname":"123","uid":"web_im_1593668895325","status":1},{"nickname":"554","uid":"web_im_1593668994253","status":1}],"groups":[{"id":1593668901314,"name":"222","users":[{"uid":"web_im_1593668895325","nickname":"123"},{"uid":"web_im_1593668994253","nickname":"554"}]},{"id":1593670380993,"name":"newGroup","users":[{"uid":"web_im_1593668895325","nickname":"123"}]}],"uid":"web_im_1593668895325","nickname":"123","bridge":[]}
+
+此时影响的是群组列表  参数是groups
+    创建群组的用户  自动加入群组中
+
+
+3）发送群聊消息
+请求
+{"uid":"web_im_1593668895325","type":100,"nickname":"123","msg":"123","bridge":[],"groupId":1593670380993}  
+响应
+{"type":2,"date":"2020-07-02 14:13:06","msg":"123","uid":"web_im_1593668895325","nickname":"123","bridge":[],"groupId":1593670380993,"status":1}  
+
+
+接收推送的响应
+{"type":1,"date":"2020-07-02 14:14:05","msg":"554创建了群1234","users":[{"nickname":"123","uid":"web_im_1593668895325","status":1},{"nickname":"554","uid":"web_im_1593668994253","status":1}],"groups":[{"id":1593668901314,"name":"222","users":[{"uid":"web_im_1593668895325","nickname":"123"},{"uid":"web_im_1593668994253","nickname":"554"}]},{"id":1593670380993,"name":"newGroup","users":[{"uid":"web_im_1593668895325","nickname":"123"}]},{"id":1593670445119,"name":"1234","users":[{"uid":"web_im_1593668994253","nickname":"554"}]}],"uid":"web_im_1593668994253","nickname":"554","bridge":[]}
+
+4）加入群组
+请求
+{"uid":"web_im_1593668895325","type":20,"nickname":"123","groupId":1593670445119,"groupName":"1234","bridge":[]}
+响应
+{"type":1,"date":"2020-07-02 14:14:46","msg":"123加入了群1234","users":[{"nickname":"123","uid":"web_im_1593668895325","status":1},{"nickname":"554","uid":"web_im_1593668994253","status":1}],"groups":[{"id":1593668901314,"name":"222","users":[{"uid":"web_im_1593668895325","nickname":"123"},{"uid":"web_im_1593668994253","nickname":"554"}]},{"id":1593670380993,"name":"newGroup","users":[{"uid":"web_im_1593668895325","nickname":"123"}]},{"id":1593670445119,"name":"1234","users":[{"uid":"web_im_1593668994253","nickname":"554"},{"uid":"web_im_1593668895325","nickname":"123"}]}],"uid":"web_im_1593668895325","nickname":"123","bridge":[]}
+
+更改的是  1234群组的用户列表
+
+5）发送私聊消息
+请求
+{"uid":"web_im_1593668895325","type":100,"nickname":"123","msg":"hello 554","bridge":["web_im_1593668895325","web_im_1593668994253"],"groupId":""}
+响应
+{"type":2,"date":"2020-07-02 14:15:09","msg":"hello 554","uid":"web_im_1593668895325","nickname":"123","bridge":["web_im_1593668895325","web_im_1593668994253"],"groupId":"","status":1}
+
+msg存储的 或者是具体的消息  或者是要广播的信息
 
 

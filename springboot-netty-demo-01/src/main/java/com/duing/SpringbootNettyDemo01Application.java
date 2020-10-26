@@ -1,6 +1,7 @@
 package com.duing;
 
 import com.duing.file.FileServer;
+import com.duing.websocket.WebSocketServer;
 import io.netty.channel.ChannelFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +24,9 @@ public class SpringbootNettyDemo01Application implements CommandLineRunner {
     @Autowired
     private FileServer fileServer;
 
+    @Autowired
+    private WebSocketServer webSocketServer;
+
     public static void main(String[] args) {
         SpringApplication.run(SpringbootNettyDemo01Application.class, args);
     }
@@ -38,13 +42,25 @@ public class SpringbootNettyDemo01Application implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
+//        // 启动
+//        ChannelFuture future = fileServer.start(port);
+//        // 关闭
+//        Runtime.getRuntime().addShutdownHook(new Thread() {
+//            @Override
+//            public void run() {
+//                fileServer.destroy();
+//            }
+//        });
+//
+//        future.channel().closeFuture().sync();
+
         // 启动
-        ChannelFuture future = fileServer.start(port);
+        ChannelFuture future = webSocketServer.start(port);
         // 关闭
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
-                fileServer.destroy();
+                webSocketServer.destroy();
             }
         });
 

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hello WebSocket</title>
+</head>
+<body>
+
+<script>
+    var socket;
+    // 判断当前浏览器是否支持websocket
+    if (!window.WebSocket) {
+        alert("不支持websocket")
+    } else {
+        socket = new WebSocket("ws://127.0.0.1:7777/hello");
+        // 设置开启连接的方法
+        socket.onopen = function (ev) {
+            var tmp = document.getElementById("respText");
+            tmp.value = "连接已开启";
+        }
+        // 设置关闭连接的方法
+        socket.onclose = function (ev) {
+            var tmp = document.getElementById("respText");
+            tmp.value = tmp.value + "\n" + "连接已关闭";
+        }
+        // 设置接收数据的方法
+        socket.onmessage = function (ev) {
+            var tmp = document.getElementById("respText");
+            tmp.value = tmp.value + "\n" + ev.data;
+        }
+
+    }
+
+    function send(message) {
+        // 先判断socket是否已经创建
+        if (!window.socket) {
+            return
+        }
+
+        // 判断socket的状态
+        //   CONNECTING  正在连接    CLOSING  正在关闭
+        //   CLOSED  已经关闭或打开连接失败
+        //   OPEN  连接成功 可以正常通信
+        if (socket.readyState == WebSocket.OPEN) {
+            socket.send(message);
+        } else {
+            alert("连接未开启");
+        }
+    }
+</script>
+
+<!--防止表单自动提交-->
+<form onsubmit="return false">
+    <textarea name="message" style="height: 400px;width: 400px"></textarea>
+    <input type="button" value="发送" onclick="send(this.form.message.value)">
+    <textarea id="respText" style="height: 400px;width: 400px"></textarea>
+</form>
+
+
+</body>
+</html>
