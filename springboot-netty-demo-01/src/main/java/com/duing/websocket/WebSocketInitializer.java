@@ -27,9 +27,9 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         // 聚合
         pipeline.addLast(new HttpObjectAggregator(512*1024));
         // 声明websocket的请求路径
-        //  ws://127.0.0.1:7777/hello
+        //  ws://127.0.0.1:8899/chat
         //  是将http协议升级为websocket协议  并且使用101作为响应码
-        pipeline.addLast(new WebSocketServerProtocolHandler("/hello"));
+        pipeline.addLast(new WebSocketServerProtocolHandler("/chat"));
 
         pipeline.addLast(webSocketHandler);
     }
