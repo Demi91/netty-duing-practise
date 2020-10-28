@@ -30,10 +30,19 @@ public class LocalData {
     public static List<Channel> getAllChannel() {
         List<Channel> channels = new ArrayList<>();
         Iterator<Channel> iterator = channelList.iterator();
-        while (iterator.hasNext()){
+        while (iterator.hasNext()) {
             Channel channel = iterator.next();
             channels.add(channel);
         }
         return channels;
+    }
+
+    public static GroupModel getGroupById(String id) {
+        for (GroupModel groupModel : groupModelList) {
+            if (groupModel.getId().equals(id)) {
+                return groupModel;
+            }
+        }
+        return null;
     }
 }
